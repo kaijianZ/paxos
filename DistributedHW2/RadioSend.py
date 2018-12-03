@@ -16,15 +16,17 @@ class RadioSend:
             tmp_port = self.sitedict[tmp_hostname]["port"]
             self.sockList[tmp_hostname] = (tmp_hostname,tmp_port)
 
-    def sendMsgToALL(self,message):
+    def sendMsgToALL(self,command,text):
         for key in self.sockList:
-            self.sendMsg(self.sockList[key][0],message)
+            self.sendMsg(self.sockList[key][0],command,text)
 
-    def sendMsg(self,targetHostname,message):
+    def sendMsg(self,targetHostname,command,text):
         # targetIndex = self.sitedict[targetHostname]["index"]
         targetAddr = self.sockList[targetHostname]
         print("===================SEND=======================")
-        self.sock.sendto(text,targetAddr)
+        messageObj = {"command":command,"text":text}
+        # TODO: dump message into string
+        self.sock.sendto(messageStr,targetAddr)
 
 #==============================================================================
 #                               Helpers

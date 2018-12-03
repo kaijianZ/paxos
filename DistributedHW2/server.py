@@ -8,6 +8,7 @@ from RadioSend import readTXTFile
 
 BACKLOG_MAX = 5
 PACKETSIZE_MAX = 1024
+TIMEOUT = 5
 
 def main():
     HOSTNAME = sys.argv[1]
@@ -21,12 +22,22 @@ def main():
     except:
         print("Failed to bind(): server is possibly already running")
         sys.exit(0)
-    input = [server]
     CP = CommandProcessor(HOSTNAME)
+    data_buffer = bytearray(PACKETSIZE_MAX)
     sys.stdout.flush()
 
     while True:
-        data, addr = server.recvfrom(PACKETSIZE_MAX)
+        readable, writable, exceptional = select.select([server.fileno()],
+                                                        [],
+                                                        [],
+                                                        TIMEOUT)
+        if not readable and not writable and not exceptional:
+            print("timeout: no heartbeats")
+            continue
+            # CP.em.checkAlive()
+            # TODO: check alive after one node sends message, but other failed
+        data, sender_addr = server.recvfrom(PACKETSIZE_MAX)
+        # print(data.decode("utf-8"))
         try:
             ret = processInput(data.decode("utf-8"), CP)
         except Exception as e:
@@ -34,7 +45,7 @@ def main():
             ret = "Internal error"
         if ret == "REMOTE":
             continue
-        server.sendto(str.encode(ret),addr)
+        server.sendto(str.encode(ret),sender_addr)
         sys.stdout.flush()
 
 def processInput(str, CP):
@@ -43,6 +54,7 @@ def processInput(str, CP):
         command = strObj["command"]
     except:
         print("Invalid input: " + str)
+        traceback.print_exc()
         return "Invalid input"
 
     print("/"+command)
@@ -57,6 +69,8 @@ def processInput(str, CP):
         return CP.processMYVIEW()
     elif command == "log":
         return CP.processLOG()
+    elif command == "leader":
+        return CP.processLEADER()
     elif command == "receiveCreate":
         return CP.processRECEIVE_create(text)
     elif command == "receiveCancel":

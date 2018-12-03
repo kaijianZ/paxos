@@ -1,76 +1,54 @@
-from CalenderManager import CalenderManager
 from Meeting import Meeting, strList2Meeting
+import RadioSend
+import ElectionManager
 
 class CommandProcessor:
     def __init__(self,hostname):
-        index, MaxIndex = findIndexFromTXTFile(hostname)
+        self.hostname = hostname
+        index, self.MaxIndex = findIndexFromTXTFile(hostname)
         if index < 0:
             raise ValueError("Can not find the hostname in knownhosts_udp.txt")
-        self.calender = CalenderManager(hostname, index, MaxIndex)
+        self.rs = RadioSend.RadioSend(index,hostname)
+        self.em = ElectionManager.ElectionManager(hostname,self.rs)
 
     def processSCHEDULE(self, userInput):
-        userInputList = userInput.split(" ")
-        if len(userInputList) != 6:
-            return "Unable to schedule meeting with UNKNOWN input."
-        meeting = strList2Meeting(userInputList)
-        noConflict = self.calender.addMeeting(meeting)
-        if noConflict:
-            return "Meeting " + meeting.name + " scheduled."
-        else:
-            return "Unable to schedule meeting " + userInputList[1] + "."
+        return ""
 
     def processCANCEL(self, userInput):
-        userInputList = userInput.split(" ")
-        if len(userInputList) != 2:
-            return "Unable to cancel meeting with UNKNOWN input."
-        findMeeting = self.calender.delMeeting(userInputList[1])
-        if findMeeting:
-            return "Meeting " + userInputList[1] + " cancelled."
-        else:
-            return "Unable to find meeting " + userInputList[1] + "."
+        return ""
 
     def processVIEW(self):
-        ret = ""
-        meetingList = self.calender.listMeeting()
-        for meeting in meetingList:
-            ret += meeting.toString() + "\n"
-        return ret.rstrip()
+        return ""
 
     def processMYVIEW(self):
-        ret = ""
-        meetingList = self.calender.listMyMeeting()
-        for meeting in meetingList:
-            ret += meeting.toString() + "\n"
-        return ret.rstrip()
+        return ""
 
     def processLOG(self):
-        ret = ""
-        logList = self.calender.listLog()
-        print("logLen:"+str(len(logList)))
-        for log in logList:
-            ret += log.toString() + "\n"
-        return ret.rstrip()
+        return ""
+
+    def processLEADER(self):
+        return self.em.getLeader()
 
     def processRECEIVE_create(self, inputStr):
-        pass
+        return ""
 
     def processRECEIVE_cancel(self, inputStr):
-        pass
+        return ""
 
     def processHEARTBEAT(self, inputStr):
-        pass
+        return ""
 
-    def processHEARTBEAT_REPLY(self, inputStr):
-        pass
+    def processHEARTBEAT_reply(self, inputStr):
+        return ""
 
     def processELECTION_start(self, inputStr):
-        pass
+        return ""
 
     def processELECTION_alive(self, inputStr):
-        pass
+        return ""
 
     def processELECTION_victory(self, inputStr):
-        pass
+        return ""
 
 #==============================================================================
 #                               Helpers

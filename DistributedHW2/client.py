@@ -32,6 +32,8 @@ def str2jsonStr(str):
     strList = str.split(" ")
     command = strList[0]
     strD = {}
+    strD["command"] = ""
+    strD["text"] = ""
     if command == "schedule":
         strD["command"] = "schedule"
         strD["text"] = str
@@ -44,6 +46,8 @@ def str2jsonStr(str):
         strD["command"] = "myview"
     elif command == "log":
         strD["command"] = "log"
+    elif command == "leader":
+        strD["command"] = "leader"
     else:
         raise ValueError("Invalid input")
     jsonStr = json.dumps(strD)
