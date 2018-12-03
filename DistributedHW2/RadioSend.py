@@ -16,57 +16,19 @@ class RadioSend:
             tmp_port = self.sitedict[tmp_hostname]["port"]
             self.sockList[tmp_hostname] = (tmp_hostname,tmp_port)
 
-    def sendCreateMsg(self,targetHostname,meeting,T,logs):
-        targetIndex = self.sitedict[targetHostname]["index"]
+    def sendMsgToALL(self,message):
+        for key in self.sockList:
+            self.sendMsg(self.sockList[key][0],message)
+
+    def sendMsg(self,targetHostname,message):
+        # targetIndex = self.sitedict[targetHostname]["index"]
         targetAddr = self.sockList[targetHostname]
-
         print("===================SEND=======================")
-        print("self.T:"+str(T))
-        print("Each self.pl:")
-        NP = []
-        for log in logs:
-            print(log.name+"--"+str(targetIndex)+str(log.index)+"--"+str(T[targetIndex][log.index])+">="+str(log.counter))
-            if not hasRec(T,log,targetIndex):
-                NP.append(log.toMsgString())
-
-        tStr= json.dumps(T)
-        npStr= json.dumps(NP)
-
-        print("tStr:"+tStr)
-        print("npStr:"+npStr)
-
-        payload = {"command":"receiveCreate", "T": tStr, "NP": npStr, "senderIndex": self.index}
-        jsonStr = json.dumps(payload)
-        self.sock.sendto(jsonStr.encode(),targetAddr)
-
-    def sendCancelMsg(self,targetHostname,meetingName,T,logs):
-        targetIndex = self.sitedict[targetHostname]["index"]
-        targetAddr = self.sockList[targetHostname]
-
-        print("===================SEND=======================")
-        print("self.T:"+str(T))
-        print("Each self.pl:")
-        NP = []
-        for log in logs:
-            print(log.name+"--"+str(targetIndex)+str(log.index)+"--"+str(T[targetIndex][log.index])+">="+str(log.counter))
-            if not hasRec(T,log,targetIndex):
-                NP.append(log.toMsgString())
-
-        tStr= json.dumps(T)
-        npStr= json.dumps(NP)
-        print("tStr:"+tStr)
-        print("npStr:"+npStr)
-
-        payload = {"command":"receiveCancel", "T": tStr, "NP": npStr, "senderIndex": self.index}
-        jsonStr = json.dumps(payload)
-        self.sock.sendto(jsonStr.encode(),targetAddr)
+        self.sock.sendto(text,targetAddr)
 
 #==============================================================================
 #                               Helpers
 #==============================================================================
-
-def hasRec(T,log,k):
-    return T[k][log.index] >= log.counter
 
 def readTXTFile():
     sitedict = {}
