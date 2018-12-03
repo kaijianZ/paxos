@@ -46,12 +46,11 @@ def processInput(str, CP):
         return "Invalid input"
 
     print("/"+command)
+    text = strObj["text"]
     if command == "schedule":
-        input = strObj["text"]
-        return CP.processSCHEDULE(input)
+        return CP.processSCHEDULE(text)
     elif command == "cancel":
-        input = strObj["text"]
-        return CP.processCANCEL(input)
+        return CP.processCANCEL(text)
     elif command == "view":
         return CP.processVIEW()
     elif command == "myview":
@@ -59,15 +58,19 @@ def processInput(str, CP):
     elif command == "log":
         return CP.processLOG()
     elif command == "receiveCreate":
-        tStr = strObj["T"]
-        npStr = strObj["NP"]
-        senderIndex = strObj["senderIndex"]
-        return CP.processRECEIVE_create(tStr, npStr, senderIndex)
+        return CP.processRECEIVE_create(text)
     elif command == "receiveCancel":
-        tStr = strObj["T"]
-        npStr = strObj["NP"]
-        senderIndex = strObj["senderIndex"]
-        return CP.processRECEIVE_cancel(tStr, npStr, senderIndex)
+        return CP.processRECEIVE_cancel(text)
+    elif command == "heartbeat":
+        return CP.processHEARTBEAT(input)
+    elif command == "heartbeat-reply":
+        return CP.processHEARTBEAT_REPLY(text)
+    elif command == "election-start":
+        return CP.processELECTION_start(text)
+    elif command == "election-alive":
+        return CP.processELECTION_alive(text)
+    elif command == "election-victory":
+        return CP.processELECTION_victory(text)
     else:
         return "Invalid input\n"
 

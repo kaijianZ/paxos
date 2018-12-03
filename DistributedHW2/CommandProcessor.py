@@ -51,15 +51,26 @@ class CommandProcessor:
             ret += log.toString() + "\n"
         return ret.rstrip()
 
-    def processRECEIVE_create(self, tStr, npStr, senderIndex):
-        print("REMOTE----CREATE")
-        self.calender.changeLogStatus(tStr,npStr,senderIndex)
-        return "REMOTE"
+    def processRECEIVE_create(self, inputStr):
+        pass
 
-    def processRECEIVE_cancel(self, tStr, npStr, senderIndex):
-        print("REMOTE----CANCEL")
-        self.calender.changeLogStatus(tStr,npStr,senderIndex)
-        return "REMOTE"
+    def processRECEIVE_cancel(self, inputStr):
+        pass
+
+    def processHEARTBEAT(self, inputStr):
+        pass
+
+    def processHEARTBEAT_REPLY(self, inputStr):
+        pass
+
+    def processELECTION_start(self, inputStr):
+        pass
+
+    def processELECTION_alive(self, inputStr):
+        pass
+
+    def processELECTION_victory(self, inputStr):
+        pass
 
 #==============================================================================
 #                               Helpers
