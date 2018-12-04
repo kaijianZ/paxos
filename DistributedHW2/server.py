@@ -46,12 +46,12 @@ def processInput(str, CP):
     try:
         strObj = json.loads(str)
         command = strObj["command"]
+        # print("/"+command)
     except:
         print("Invalid input: " + str)
         traceback.print_exc()
         return "Invalid input"
 
-    print("/"+command)
     text = strObj["text"]
     if command == "schedule":
         return CP.processSCHEDULE(text)
@@ -70,14 +70,14 @@ def processInput(str, CP):
     elif command == "receiveCancel":
         return CP.processRECEIVE_cancel(text)
     elif command == "heartbeat":
-        return CP.processHEARTBEAT(input)
+        return CP.processHEARTBEAT(text)
     elif command == "heartbeat-reply":
         return CP.processHEARTBEAT_reply(text)
     elif command == "heartbeat-check":
         return CP.processHEARTBEAT_check(text)
     elif command == "election-start":
         return CP.processELECTION_start(text)
-    elif command == "election-alive":
+    elif command == "election-reply":
         return CP.processELECTION_alive(text)
     elif command == "election-victory":
         return CP.processELECTION_victory(text)

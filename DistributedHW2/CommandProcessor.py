@@ -50,12 +50,15 @@ class CommandProcessor:
 
     # election
     def processELECTION_start(self, inputStr):
+        self.em.recvElection(inputStr)
         return ""
 
     def processELECTION_alive(self, inputStr):
+        self.em.recvElection_reply(inputStr)
         return ""
 
     def processELECTION_victory(self, inputStr):
+        self.em.recvVictory(inputStr)
         return ""
 
 #==============================================================================
