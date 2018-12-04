@@ -1,6 +1,6 @@
 from socket import *
-from Meeting import Meeting
 import json
+import time, threading
 
 class RadioSend:
     def __init__(self,index,hostname):
@@ -20,13 +20,24 @@ class RadioSend:
         for key in self.sockList:
             self.sendMsg(self.sockList[key][0],command,text)
 
-    def sendMsg(self,targetHostname,command,text):
-        # targetIndex = self.sitedict[targetHostname]["index"]
+    def sendMsg(self,targetHostname,command,text,delay=0):
         targetAddr = self.sockList[targetHostname]
-        print("===================SEND=======================")
         messageObj = {"command":command,"text":text}
-        # TODO: dump message into string
-        self.sock.sendto(messageStr,targetAddr)
+        messageStr = json.dumps(messageObj)
+        if delay == 0:
+            self._sendMsg(messageStr,targetAddr)
+        else:
+            t = threading.Thread(   target=self._sendMsgWait,
+                                    args=[messageStr,targetAddr,delay])
+            t.start()
+
+    def _sendMsgWait(self,messageStr,targetAddr,delay):
+        time.sleep(delay)
+        self._sendMsg(messageStr,targetAddr)
+
+    def _sendMsg(self,messageStr,targetAddr):
+        print("===================SEND=======================")
+        self.sock.sendto(messageStr.encode(),targetAddr)
 
 #==============================================================================
 #                               Helpers

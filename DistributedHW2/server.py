@@ -29,13 +29,7 @@ def main():
     while True:
         readable, writable, exceptional = select.select([server.fileno()],
                                                         [],
-                                                        [],
-                                                        TIMEOUT)
-        if not readable and not writable and not exceptional:
-            print("timeout: no heartbeats")
-            continue
-            # CP.em.checkAlive()
-            # TODO: check alive after one node sends message, but other failed
+                                                        [])
         data, sender_addr = server.recvfrom(PACKETSIZE_MAX)
         # print(data.decode("utf-8"))
         try:
@@ -78,7 +72,9 @@ def processInput(str, CP):
     elif command == "heartbeat":
         return CP.processHEARTBEAT(input)
     elif command == "heartbeat-reply":
-        return CP.processHEARTBEAT_REPLY(text)
+        return CP.processHEARTBEAT_reply(text)
+    elif command == "heartbeat-check":
+        return CP.processHEARTBEAT_check(text)
     elif command == "election-start":
         return CP.processELECTION_start(text)
     elif command == "election-alive":
