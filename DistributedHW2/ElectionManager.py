@@ -71,7 +71,10 @@ class ElectionManager:
         else:
             print("node: "+hostname+" is alive")
             self.nodeStatus[hostname]["status"] = True
-            self.sendHeartbeat(hostname)
+            # optimization
+            # only send heartbeat to leader, it is the only node matters
+            if hostname == self.leaderHostname:
+                self.sendHeartbeat(hostname)
 
 #==============================================================================
 #                               Elections
@@ -80,8 +83,15 @@ class ElectionManager:
     # send election message to all nodes with higher priorities
     def sendElectionToALL(self):
         print("sendElectionToALL")
+        # optimization
+        # if this node is the highest-value node, ignore election and send victory
+        highestHostname = max(list(self.nodeStatus.keys()))
+        if self.hostname == highestHostname:
+            self.sendVictoryToALL()
+            return
+
         for key in self.nodeStatus.keys():
-            if self.compareNodePriority(key,self.hostname):
+            if key > self.hostname:
                 self.sendElection(key)
         # add 0.1 for safety, need to assure it finishes after other threads
         t = threading.Timer(ELECTION_WAIT+ALLOWED_TIMER_LATENCY,self.checkElectionOnALL)
@@ -166,7 +176,6 @@ class ElectionManager:
         print("\tnew leader is "+self.leaderHostname)
 
     def checkVictory(self):
-
         if self.receivedVictory == False:
             # leader timeout his victory, reelect one
             print("checkVictory-timeout on victory")
@@ -179,12 +188,6 @@ class ElectionManager:
 #==============================================================================
 #                               Helpers
 #==============================================================================
-
-    def compareNodePriority(self,nameA,nameB):
-        if nameA > nameB:
-            return True
-        else:
-            return False
 
     def _checkHeartbeat(self,targetHostname):
         currentTime = datetime.now()
