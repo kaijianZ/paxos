@@ -1,6 +1,6 @@
 import pickle, math
 import collections
-from meeting import *
+from Meeting import *
 import random
 from threading import Lock, Timer
 lock = RLock()
