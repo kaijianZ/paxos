@@ -76,7 +76,6 @@ class Synod:
 
     def accept_timeout(self, proposeNum):
         lock.acquire()
-        print('accepttimeout', self.proposeVal, self.accepts)
 
         if self.accepts[proposeNum] < self.majorityNum:
             print('selfaccepts|||||||||||', self.accepts[proposeNum],
@@ -87,7 +86,7 @@ class Synod:
 
     def P_prepare(self):
         lock.acquire()
-        print('prepare', self.proposeVal)
+        print('prepare', self.proposeVal, self.logNum)
 
         if self.proposeCounter == self.trialNum:
             self.fail()
@@ -102,7 +101,7 @@ class Synod:
 
         lock.release()
 
-        t = Timer(0.5, self.prepare_timeout, [proposeNum])
+        t = Timer(0.2, self.prepare_timeout, [proposeNum])
         t.start()
 
     def A_promise(self, msg: Prepare):
@@ -131,10 +130,11 @@ class Synod:
                            reverse=True)[0][1]
             print('request', self.proposeVal)
 
-            self.proposeVal = self.proposeVal if len(list(filter(lambda x: x[1]
-                                                                           is not None,
-                                                                 self.promises[
-                                                                     msg.proposeNum]))) == 0 else value
+            self.proposeVal = self.proposeVal if \
+                len(list(filter(lambda x: x[1] is not None,
+                                self.promises[
+                                    msg.proposeNum]))) == 0 else value
+
             print(self.proposeVal, len(list(filter(lambda x: x[1]
                                                              is not None,
                                                    self.promises[
@@ -144,7 +144,7 @@ class Synod:
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                           self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
-            t = Timer(0.5, self.accept_timeout, [old_proposeNum])
+            t = Timer(0.2, self.accept_timeout, [old_proposeNum])
             t.start()
         lock.release()
 
@@ -264,7 +264,7 @@ class Paxos:
     def insert(self, meeting: Meeting, learn: bool):
         lock.acquire()
         if self.learnVals(learn):
-            t = Timer(0.5, self.insert, [meeting, False])
+            t = Timer(0.2, self.insert, [meeting, False])
             t.start()
         else:
             if ok_to_schedule(self.calender, meeting):
@@ -289,7 +289,7 @@ class Paxos:
     def delete(self, meeting, learn: bool):
         lock.acquire()
         if self.learnVals(learn):
-            t = Timer(0.5, self.delete, [meeting, False])
+            t = Timer(0.2, self.delete, [meeting, False])
             t.start()
         else:
             if meeting in self.calender:
