@@ -40,9 +40,10 @@ class CommandProcessor:
         return self.pa.myview()
 
     def processLOG(self):
+        ans = ''
         for l in self.pa.log[:self.pa.lastAvailablelogNum]:
-            print(l)
-        return ""
+            ans += str(l) + '\n'
+        return ans.rstrip('\n')
 
     def processLEADER(self):
         return self.em.getLeader()

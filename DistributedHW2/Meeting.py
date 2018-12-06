@@ -2,6 +2,7 @@ import pickle
 import socket
 import os.path
 
+
 class Meeting(object):
     def __init__(self, name, date, start, end, participants):
         self.name = name
@@ -37,7 +38,7 @@ class Log(object):
 
     def __str__(self):
         return self.op + ' ' + str(self.value)
-        
+
 
 STABLE_STORAGE = 'stable.pkl'
 
@@ -109,21 +110,3 @@ def load_stable(host_len):
 def dump_stable(obj_list):
     with open(STABLE_STORAGE, 'wb') as fout:
         pickle.dump(obj_list, fout, pickle.HIGHEST_PROTOCOL)
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

@@ -199,16 +199,16 @@ class Paxos:
         ans = ''
         for meeting in sorted_view(self.calender.values()):
             # print(meeting)f
-            ans += str(meeting)
-        return ans
+            ans += str(meeting) + '\n'
+        return ans.rstrip('\n')
 
     def myview(self):
         ans = ''
         for meeting in sorted_view(filter_by_participants(
                 self.calender.values(), self.sender.HOSTNAME)):
             # print(meeting)
-            ans += str(meeting)
-        return ans
+            ans += str(meeting) + '\n'
+        return ans.rstrip('\n')
 
     def addLog(self, msg: Commit):
         self.log[msg.logNum] = msg.accVal
