@@ -121,11 +121,12 @@ class Synod:
         lock.acquire()
 
         # self.promises.get(msg.proposeNum, []).append((msg.accNum, msg.accVal))
+        old_proposeNum = msg.proposeNum
         if msg.proposeNum not in self.promises:
             self.promises[msg.proposeNum] = []
         self.promises[msg.proposeNum].append((msg.accNum, msg.accVal))
 
-        if len(self.promises[msg.proposeNum]) >= self.majorityNum:
+        if len(self.promises[msg.proposeNum]) == self.majorityNum:
             value = sorted(self.promises[msg.proposeNum], key=lambda x: x[0],
                            reverse=True)[0][1]
             print('request', self.proposeVal)
@@ -138,13 +139,14 @@ class Synod:
                                                              is not None,
                                                    self.promises[
                                                        msg.proposeNum]))), msg.accNum)
+            
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                           self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
-
+            t = Timer(0.5, self.accept_timeout, [old_proposeNum])
+            t.start()
         lock.release()
-        t = Timer(0.5, self.accept_timeout, [msg.proposeNum])
-        t.start()
+       
 
     def A_accept(self, msg: AcptReq):
         lock.acquire()
