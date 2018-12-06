@@ -221,6 +221,7 @@ class Paxos:
 
     def msgParser(self, msg):
         if isinstance(msg, Prepare):
+            self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None, 3)
             self.logSynod[msg.logNum].A_promise(msg)
         elif isinstance(msg, Promise):
             self.logSynod[msg.logNum].P_request(msg)

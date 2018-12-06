@@ -50,8 +50,8 @@ def processInput(str, CP):
         command = strObj["command"]
         # print("/"+command)
     except:
-        print("Invalid input: " + str)
-        traceback.print_exc()
+        # print("Invalid input: " + str)
+        # traceback.print_exc()
         return "Invalid input"
 
     text = strObj["text"]
