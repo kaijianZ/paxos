@@ -207,7 +207,7 @@ class Paxos:
         if msg.accVal.op == 'schedule':
             self.calender[msg.accVal.value.name] = msg.accVal.value
         else:
-            del self.calender[msg.accVal.value.name]
+            del self.calender[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
 
 
