@@ -211,7 +211,10 @@ class Paxos:
         return ans.rstrip('\n')
 
     def addLog(self, msg: Commit):
+        if self.log[msg.logNum] is not None:
+            return
         self.log[msg.logNum] = msg.accVal
+        lock.acquire()
         if msg.accVal is None:
             return
         if msg.accVal.op == 'schedule':
@@ -219,20 +222,26 @@ class Paxos:
         else:
             del self.calender[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
+        lock.release()
 
     def learnVal(self, logNum):
+        lock.acquire()
         if self.logSynod[logNum] is None:
             self.logSynod[logNum] = Synod(logNum, self.sender, None, 100)
 
         self.logSynod[logNum].trialNum = 100
         self.logSynod[logNum].P_prepare()
+        lock.release()
 
     def recvAccept(self, msg: Accept):
+        lock.acquire()
         self.logSynod[msg.logNum].P_commit(msg)
         if self.logSynod[msg.logNum].accepted:
             self.addLog(Commit(msg.logNum, msg.accVal))
+        lock.release()
 
     def msgParser(self, msg):
+        lock.acquire()
         if isinstance(msg, Prepare):
             if self.logSynod[msg.logNum] is None:
                 self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None,
@@ -246,9 +255,12 @@ class Paxos:
             self.recvAccept(msg)
         elif isinstance(msg, Commit):
             self.addLog(msg)
+        lock.release()
         return ''
 
+
     def insert(self, meeting: Meeting, learn: bool):
+        lock.acquire()
         if self.learnVals(learn):
             t = Timer(0.1, self.insert, [meeting, False])
             t.start()
@@ -261,6 +273,7 @@ class Paxos:
                 self.logSynod[self.lastAvailablelogNum].P_prepare()
             else:
                 print('Unable to schedule meeting', meeting.name + '.')
+        lock.release()
 
     def learnVals(self, learn: bool):  # return T if hole exists, else F
         for i in range(self.lastAvailablelogNum):
@@ -272,6 +285,7 @@ class Paxos:
         return True
 
     def delete(self, meeting, learn: bool):
+        lock.acquire()
         if self.learnVals(learn):
             t = Timer(0.1, self.delete, [meeting, False])
             t.start()
@@ -283,5 +297,5 @@ class Paxos:
                 self.logSynod[self.lastAvailablelogNum].P_prepare()
             else:
                 print('Unable to cancel meeting', meeting + '.')
-
+        lock.release()
 # class normalPaxos()
