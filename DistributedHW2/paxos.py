@@ -209,7 +209,7 @@ class Paxos:
     def myview(self):
         ans = ''
         for meeting in sorted_view(filter_by_participants(
-                self.calender.values(), self.sender.HOSTNAME)):
+                self.calender, self.sender.HOSTNAME)):
             # print(meeting)
             ans += str(meeting) + '\n'
         return ans.rstrip('\n')
