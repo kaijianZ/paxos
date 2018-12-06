@@ -3,14 +3,15 @@ from ElectionManager import *
 from paxos import *
 from meeting import *
 
+
 class CommandProcessor:
-    def __init__(self,hostname):
+    def __init__(self, hostname):
         self.hostname = hostname
         index, self.MaxIndex = findIndexFromTXTFile(hostname)
         if index < 0:
             raise ValueError("Can not find the hostname in knownhosts_udp.txt")
-        self.rs = RadioSend(index,hostname)
-        self.em = ElectionManager(hostname,self.rs)
+        self.rs = RadioSend(index, hostname)
+        self.em = ElectionManager(hostname, self.rs)
         self.pa = Paxos(10000, self.rs)
 
     def processSCHEDULE(self, line):
@@ -78,9 +79,10 @@ class CommandProcessor:
         self.em.recvVictory(inputStr)
         return ""
 
-#==============================================================================
+
+# ==============================================================================
 #                               Helpers
-#==============================================================================
+# ==============================================================================
 
 # return index representing line number in TXT
 # return -1 when no data inside txt matches given hostname

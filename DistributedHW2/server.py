@@ -11,9 +11,10 @@ BACKLOG_MAX = 5
 PACKETSIZE_MAX = 1024
 TIMEOUT = 5
 
+
 def main():
     HOSTNAME = sys.argv[1]
-    sitelist,_ = readTXTFile()
+    sitelist, _ = readTXTFile()
     PORT = sitelist[sys.argv[1]]["port"]
     print("Hostname: [" + HOSTNAME + "] on port [" + str(PORT) + "]")
 
@@ -40,8 +41,9 @@ def main():
             ret = "Internal error"
         if ret == "REMOTE":
             continue
-        server.sendto(str.encode(ret),sender_addr)
+        server.sendto(str.encode(ret), sender_addr)
         sys.stdout.flush()
+
 
 def processInput(str, CP):
     # print(str)
@@ -83,6 +85,7 @@ def processInput(str, CP):
         return CP.processELECTION_victory(text)
     else:
         return "Invalid input\n"
+
 
 if __name__ == "__main__":
     try:

@@ -4,13 +4,16 @@ from meeting import *
 import random
 from RadioSend import *
 from threading import RLock, Timer
+
 lock = RLock()
+
 
 class Prepare:
     def __init__(self, logNum, proposeNum, senderHost):
         self.logNum = logNum
         self.proposeNum = proposeNum
         self.senderHost = senderHost
+
 
 class Promise:
     def __init__(self, logNum, proposeNum, accNum, accVal):
@@ -19,6 +22,7 @@ class Promise:
         self.accNum = accNum
         self.accVal = accVal
 
+
 class AcptReq:
     def __init__(self, logNum, accNum, accVal, senderHost):
         self.logNum = logNum
@@ -26,11 +30,13 @@ class AcptReq:
         self.accVal = accVal
         self.senderHost = senderHost
 
+
 class Accept:
     def __init__(self, logNum, accNum, accVal):
         self.logNum = logNum
         self.accNum = accNum
         self.accVal = accVal
+
 
 class Commit:
     def __init__(self, logNum, accVal):
@@ -57,7 +63,7 @@ class Synod:
         self.promises = {}
         self.accepts = collections.Counter()
         self.sender = sender
-        self.majorityNum = math.ceil(sender.maxIndex/2) + 1
+        self.majorityNum = math.ceil(sender.maxIndex / 2) + 1
 
     def prepare_timeout(self, proposeNum):
         lock.acquire()
@@ -69,7 +75,7 @@ class Synod:
 
     def accept_timeout(self, proposeNum):
         lock.acquire()
-        print('acctimeout',self.proposeVal)
+        print('acctimeout', self.proposeVal)
 
         if self.accepts[proposeNum] < self.majorityNum:
             self.P_prepare()
@@ -78,7 +84,7 @@ class Synod:
 
     def P_prepare(self):
         lock.acquire()
-        print('prepare',self.proposeVal)
+        print('prepare', self.proposeVal)
 
         if self.proposeCounter == self.trialNum:
             self.fail()
@@ -88,7 +94,7 @@ class Synod:
         self.counter += 1
         proposeNum = getProposeNum(self.counter, self.sender.index)
         msg = Prepare(self.logNum, proposeNum,
-                                            self.sender.HOSTNAME)
+                      self.sender.HOSTNAME)
         self.sender.sendMsgToALL('node', msg)
 
         lock.release()
@@ -98,12 +104,13 @@ class Synod:
 
     def A_promise(self, msg: Prepare):
         lock.acquire()
-        print('promises',self.proposeVal)
+        print('promises', self.proposeVal)
         senderHost = msg.senderHost
         if msg.proposeNum > self.maxPrepare:
             self.maxPrepare = msg.proposeNum
             msg = Promise(msg.logNum, msg.proposeNum,
-                  0 if self.accVal is None else self.accNum, self.accVal)
+                          0 if self.accVal is None else self.accNum,
+                          self.accVal)
             self.sender.sendMsg(senderHost, 'node', msg)
 
         lock.release()
@@ -111,28 +118,31 @@ class Synod:
     def P_request(self, msg: Promise):
         lock.acquire()
 
-        #self.promises.get(msg.proposeNum, []).append((msg.accNum, msg.accVal))
+        # self.promises.get(msg.proposeNum, []).append((msg.accNum, msg.accVal))
         if msg.proposeNum not in self.promises:
             self.promises[msg.proposeNum] = []
         self.promises[msg.proposeNum].append((msg.accNum, msg.accVal))
 
         if len(self.promises[msg.proposeNum]) >= self.majorityNum:
             value = sorted(self.promises[msg.proposeNum], key=lambda x: x[0],
-                                                            reverse=True)[0][1]
-            print('request',self.proposeVal)
+                           reverse=True)[0][1]
+            print('request', self.proposeVal)
 
             self.proposeVal = self.proposeVal if len(list(filter(lambda x: x[1]
-                   is not None, self.promises[msg.proposeNum]))) == 0 else value
+                                                                           is not None,
+                                                                 self.promises[
+                                                                     msg.proposeNum]))) == 0 else value
             print(self.proposeVal, len(list(filter(lambda x: x[1]
-                   is not None, self.promises[msg.proposeNum]))))
+                                                             is not None,
+                                                   self.promises[
+                                                       msg.proposeNum]))))
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
-                                                      self.sender.HOSTNAME)
+                          self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
 
         lock.release()
         t = Timer(0.05, self.accept_timeout, [msg.accNum])
         t.start()
-
 
     def A_accept(self, msg: AcptReq):
         lock.acquire()
@@ -171,17 +181,18 @@ class Synod:
     def fail(self):
         if self.originProposeVal.op == 'schedule':
             print('Unable to schedule meeting',
-                            self.originProposeVal.value.name + '.')
+                  self.originProposeVal.value.name + '.')
         else:
             print('Unable to cancel meeting',
-                            self.originProposeVal.value + '.')
+                  self.originProposeVal.value + '.')
+
 
 class Paxos:
     def __init__(self, logSize: int, sender: RadioSend):
         self.log = [None] * logSize
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
-        self.calender = {} # K: event name, V: event
+        self.calender = {}  # K: event name, V: event
         self.sender = sender
 
     def view(self):
@@ -191,11 +202,10 @@ class Paxos:
             ans += str(meeting)
         return ans
 
-
     def myview(self):
         ans = ''
         for meeting in sorted_view(filter_by_participants(
-                                   self.calender.values(), self.sender.HOSTNAME)):
+                self.calender.values(), self.sender.HOSTNAME)):
             # print(meeting)
             ans += str(meeting)
         return ans
@@ -210,8 +220,6 @@ class Paxos:
             del self.calender[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
 
-
-
     def learnVal(self, logNum):
         if self.logSynod[logNum] is None:
             self.logSynod[logNum] = Synod(logNum, self.sender, None, 100)
@@ -224,11 +232,11 @@ class Paxos:
         if self.logSynod[msg.logNum].accepted:
             self.addLog(Commit(msg.logNum, msg.accVal))
 
-
     def msgParser(self, msg):
         if isinstance(msg, Prepare):
             if self.logSynod[msg.logNum] is None:
-                self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None, 3)
+                self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None,
+                                                  3)
             self.logSynod[msg.logNum].A_promise(msg)
         elif isinstance(msg, Promise):
             self.logSynod[msg.logNum].P_request(msg)
@@ -247,13 +255,14 @@ class Paxos:
         else:
             if ok_to_schedule(self.calender, meeting):
                 # print('success--------------')
-                self.logSynod[self.lastAvailablelogNum] = Synod(self.lastAvailablelogNum,
-                        self.sender, Log('schedule', meeting), 3)
+                self.logSynod[self.lastAvailablelogNum] = Synod(
+                    self.lastAvailablelogNum,
+                    self.sender, Log('schedule', meeting), 3)
                 self.logSynod[self.lastAvailablelogNum].P_prepare()
             else:
                 print('Unable to schedule meeting', meeting.name + '.')
 
-    def learnVals(self, learn: bool): # return T if hole exists, else F
+    def learnVals(self, learn: bool):  # return T if hole exists, else F
         for i in range(self.lastAvailablelogNum):
             if self.log[i] is None:
                 if learn:
@@ -268,12 +277,11 @@ class Paxos:
             t.start()
         else:
             if meeting in self.calender:
-                self.logSynod[self.lastAvailablelogNum] = Synod(self.lastAvailablelogNum,
-                        self.sender, Log('cancel', meeting), 3)
+                self.logSynod[self.lastAvailablelogNum] = Synod(
+                    self.lastAvailablelogNum,
+                    self.sender, Log('cancel', meeting), 3)
                 self.logSynod[self.lastAvailablelogNum].P_prepare()
             else:
                 print('Unable to cancel meeting', meeting + '.')
 
 # class normalPaxos()
-
-
