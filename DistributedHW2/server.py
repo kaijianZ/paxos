@@ -2,9 +2,10 @@ import select
 from socket import *
 import sys
 import traceback
-import json
+# import json
 from CommandProcessor import CommandProcessor
 from RadioSend import readTXTFile
+import pickle
 
 BACKLOG_MAX = 5
 PACKETSIZE_MAX = 1024
@@ -33,7 +34,7 @@ def main():
         data, sender_addr = server.recvfrom(PACKETSIZE_MAX)
         # print(data.decode("utf-8"))
         try:
-            ret = processInput(data.decode("utf-8"), CP)
+            ret = processInput(data, CP)
         except Exception as e:
             traceback.print_exc()
             ret = "Internal error"
@@ -43,8 +44,9 @@ def main():
         sys.stdout.flush()
 
 def processInput(str, CP):
+    # print(str)
     try:
-        strObj = json.loads(str)
+        strObj = pickle.loads(str)
         command = strObj["command"]
         # print("/"+command)
     except:
@@ -65,10 +67,8 @@ def processInput(str, CP):
         return CP.processLOG()
     elif command == "leader":
         return CP.processLEADER()
-    elif command == "receiveCreate":
-        return CP.processRECEIVE_create(text)
-    elif command == "receiveCancel":
-        return CP.processRECEIVE_cancel(text)
+    elif command == "node":
+        return CP.pa.msgParser(text)
     elif command == "heartbeat":
         return CP.processHEARTBEAT(text)
     elif command == "heartbeat-reply":

@@ -1,6 +1,6 @@
 import sys
 from socket import *
-import json
+import pickle
 from RadioSend import *
 
 PACKETSIZE_MAX = 1024
@@ -24,7 +24,7 @@ def main():
         except ValueError as e:
             print(e)
             continue
-        sock.sendto(userInput.encode(), addr)
+        sock.sendto(userInput, addr)
         reply,_ = sock.recvfrom(PACKETSIZE_MAX)
         print(reply.decode())
 
@@ -50,7 +50,7 @@ def str2jsonStr(str):
         strD["command"] = "leader"
     else:
         raise ValueError("Invalid input")
-    jsonStr = json.dumps(strD)
+    jsonStr = pickle.dumps(strD)
     return jsonStr
 
 if __name__=='__main__':

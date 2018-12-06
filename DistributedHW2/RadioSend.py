@@ -1,6 +1,7 @@
 from socket import *
 import json
 import time
+import pickle
 
 class RadioSend:
     def __init__(self,index,hostname):
@@ -23,9 +24,9 @@ class RadioSend:
     def sendMsg(self,targetHostname,command,text):
         targetAddr = self.sockList[targetHostname]
         messageObj = {"command":command,"text":text}
-        messageStr = json.dumps(messageObj)
+        messageStr = pickle.dumps(messageObj)
         # print("===================SEND=======================")
-        self.sock.sendto(messageStr.encode(),targetAddr)
+        self.sock.sendto(messageStr,targetAddr)
 
 #==============================================================================
 #                               Helpers

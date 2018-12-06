@@ -24,13 +24,13 @@ class CommandProcessor:
 
         new_meeting = Meeting(name, day, start, end, participants)
         self.pa.insert(new_meeting, True)
-        return ''
+        return ""
 
     def processCANCEL(self, userInput):
         line = userInput.split(' ')
         name = line[1]
         self.pa.delete(name, True)
-        return ''
+        return ""
 
     def processVIEW(self):
         return self.paxos.view()

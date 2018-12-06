@@ -62,7 +62,7 @@ class Synod:
     def prepare_timeout(self, proposeNum):
         lock.acquire()
 
-        if len(self.promises[proposeNum]) < self.majorityNum:
+        if proposeNum not in self.promises.keys():
             self.P_prepare()
 
         lock.release()
@@ -70,7 +70,7 @@ class Synod:
     def accept_timeout(self, proposeNum):
         lock.acquire()
 
-        if len(self.accepts[proposeNum]) < self.majorityNum:
+        if self.accepts[proposeNum] < self.majorityNum:
             self.P_prepare()
 
         lock.release()
@@ -85,9 +85,9 @@ class Synod:
         self.proposeCounter += 1
         self.counter += 1
         proposeNum = getProposeNum(self.counter, self.sender.index)
-        msg = pickle.dumps(Prepare(self.logNum, proposeNum,
-                                            self.sender.HOSTNAME))
-        self.sender.sendMsgToALL(msg)
+        msg = Prepare(self.logNum, proposeNum,
+                                            self.sender.HOSTNAME)
+        self.sender.sendMsgToALL('node', msg)
 
         lock.release()
 
@@ -100,17 +100,21 @@ class Synod:
         senderHost = msg.senderHost
         if msg.proposeNum > self.maxPrepare:
             self.maxPrepare = msg.proposeNum
-            msg = pickle.dumps(Promise(msg.logNum, msg.proposeNum,
-                  0 if self.accVal is None else self.accNum, self.accVal))
-            self.sender.sendMsg(senderHost, msg)
+            msg = Promise(msg.logNum, msg.proposeNum,
+                  0 if self.accVal is None else self.accNum, self.accVal)
+            self.sender.sendMsg(senderHost, 'node', msg)
 
         lock.release()
 
     def P_request(self, msg: Promise):
         lock.acquire()
 
-        self.promises.get(msg.proposeNum, []).append((msg.accNum, msg.accVal))
+        #self.promises.get(msg.proposeNum, []).append((msg.accNum, msg.accVal))
+        if msg.proposeNum not in self.promises:
+            self.promises[msg.proposeNum] = []
+        self.promises[msg.proposeNum].append((msg.accNum, msg.accVal))
 
+        print(self.promises)
         if len(self.promises[msg.proposeNum]) >= self.majorityNum:
             value = sorted(self.promises[msg.proposeNum], key=lambda x: x[0],
                                                             reverse=True)[0][1]
@@ -120,8 +124,7 @@ class Synod:
 
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                                                       self.sender.HOSTNAME)
-            msg = pickle.dumps(msg)
-            self.sender.sendMsgToALL(msg)
+            self.sender.sendMsgToALL('node', msg)
 
         lock.release()
         t = Timer(0.05, self.accept_timeout, [msg.proposeNum])
@@ -137,8 +140,7 @@ class Synod:
             self.accVal = msg.accVal
             self.maxPrepare = msg.proposeNum
             msg = Accept(msg.logNum, msg.accNum, msg.accVal)
-            msg = pickle.dumps(msg)
-            self.sender.sendMsg(senderHost, msg)
+            self.sender.sendMsg(senderHost, 'node', msg)
 
         lock.release()
 
@@ -147,12 +149,12 @@ class Synod:
 
         self.accepts[msg.accNum] += 1
         assert(msg.accVal == self.proposeVal)
-        if len(self.accepts[msg.accNum]) >= self.majorityNum:
+        if self.accepts[msg.accNum] >= self.majorityNum:
             self.accepted = True
             if self.originProposeVal == self.proposeVal:
                 self.success()
-            msg = pickle.dumps(Commit(self.logNum, msg.accVal))
-            self.sender.sendMsgToALL(msg)
+            msg = Commit(self.logNum, msg.accVal)
+            self.sender.sendMsgToALL('node', msg)
 
         lock.release()
 
@@ -228,6 +230,7 @@ class Paxos:
             self.recvAccept(msg)
         elif isinstance(msg, Commit):
             self.addLog(msg)
+        return ''
 
     def insert(self, meeting: Meeting, learn: bool):
         if self.learnVals(learn):
