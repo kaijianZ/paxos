@@ -1,6 +1,5 @@
-from Meeting import Meeting, strList2Meeting
-import RadioSend
-import ElectionManager
+from .RadioSend import *
+from .ElectionManager import *
 
 class CommandProcessor:
     def __init__(self,hostname):
@@ -8,8 +7,8 @@ class CommandProcessor:
         index, self.MaxIndex = findIndexFromTXTFile(hostname)
         if index < 0:
             raise ValueError("Can not find the hostname in knownhosts_udp.txt")
-        self.rs = RadioSend.RadioSend(index,hostname)
-        self.em = ElectionManager.ElectionManager(hostname,self.rs)
+        self.rs = RadioSend(index,hostname)
+        self.em = ElectionManager(hostname,self.rs)
 
     def processSCHEDULE(self, userInput):
         return ""

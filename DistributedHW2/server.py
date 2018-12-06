@@ -3,8 +3,8 @@ from socket import *
 import sys
 import traceback
 import json
-from CommandProcessor import CommandProcessor
-from RadioSend import readTXTFile
+from .CommandProcessor import CommandProcessor
+from .RadioSend import readTXTFile
 
 BACKLOG_MAX = 5
 PACKETSIZE_MAX = 1024
