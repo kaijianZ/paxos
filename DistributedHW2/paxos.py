@@ -69,15 +69,17 @@ class Synod:
         lock.acquire()
 
         if proposeNum not in self.promises.keys():
+            print('propose not in ||||||||')
             self.P_prepare()
 
         lock.release()
 
     def accept_timeout(self, proposeNum):
         lock.acquire()
-        print('acceptimeout', self.proposeVal, self.accepts)
+        print('accepttimeout', self.proposeVal, self.accepts)
 
         if self.accepts[proposeNum] < self.majorityNum:
+            print('selfaccepts|||||||||||', self.accepts[proposeNum], self.majorityNum)
             self.P_prepare()
 
         lock.release()
@@ -135,13 +137,13 @@ class Synod:
             print(self.proposeVal, len(list(filter(lambda x: x[1]
                                                              is not None,
                                                    self.promises[
-                                                       msg.proposeNum]))))
+                                                       msg.proposeNum]))), msg.accNum)
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                           self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
 
         lock.release()
-        t = Timer(0.5, self.accept_timeout, [msg.accNum])
+        t = Timer(0.5, self.accept_timeout, [msg.proposeNum])
         t.start()
 
     def A_accept(self, msg: AcptReq):
