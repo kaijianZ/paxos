@@ -68,8 +68,8 @@ class Synod:
     def prepare_timeout(self, proposeNum):
         lock.acquire()
 
-        if proposeNum not in self.promises.keys():
-            print('propose not in ||||||||')
+        if proposeNum not in self.promises.keys() or len(
+                self.promises[proposeNum]) < self.majorityNum:
             self.P_prepare()
 
         lock.release()
@@ -79,7 +79,8 @@ class Synod:
         print('accepttimeout', self.proposeVal, self.accepts)
 
         if self.accepts[proposeNum] < self.majorityNum:
-            print('selfaccepts|||||||||||', self.accepts[proposeNum], self.majorityNum)
+            print('selfaccepts|||||||||||', self.accepts[proposeNum],
+                  self.majorityNum)
             self.P_prepare()
 
         lock.release()
@@ -106,7 +107,6 @@ class Synod:
 
     def A_promise(self, msg: Prepare):
         lock.acquire()
-        print('promises', self.proposeVal)
         senderHost = msg.senderHost
         if msg.proposeNum > self.maxPrepare:
             self.maxPrepare = msg.proposeNum
@@ -138,15 +138,15 @@ class Synod:
             print(self.proposeVal, len(list(filter(lambda x: x[1]
                                                              is not None,
                                                    self.promises[
-                                                       msg.proposeNum]))), msg.accNum)
-            
+                                                       msg.proposeNum]))),
+                  msg.accNum)
+
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                           self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
             t = Timer(0.5, self.accept_timeout, [old_proposeNum])
             t.start()
         lock.release()
-       
 
     def A_accept(self, msg: AcptReq):
         lock.acquire()
@@ -261,7 +261,6 @@ class Paxos:
             self.addLog(msg)
         lock.release()
         return ''
-
 
     def insert(self, meeting: Meeting, learn: bool):
         lock.acquire()
