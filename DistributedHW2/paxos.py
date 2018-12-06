@@ -1,8 +1,8 @@
 import pickle, math
 import collections
-from .meeting import *
+from meeting import *
 import random
-from .RadioSend import *
+from RadioSend import *
 from threading import RLock, Timer
 lock = RLock()
 
@@ -170,7 +170,7 @@ class Synod:
             print('Unable to cancel meeting',
                             self.originProposeVal.value.name + '.')
 
-class distinguishedPaxos:
+class Paxos:
     def __init__(self, logSize: int, sender: RadioSend):
         self.log = [None] * logSize
         self.logSynod = [None] * logSize
@@ -179,13 +179,20 @@ class distinguishedPaxos:
         self.sender = sender
 
     def view(self):
+        ans = ''
         for meeting in sorted_view(self.calender.values()):
-            print(meeting)
+            # print(meeting)f
+            ans += meeting
+        return ans
+
 
     def myview(self):
+        ans = ''
         for meeting in sorted_view(filter_by_participants(
                                    self.calender.values(), self.sender.HOSTNAME)):
-            print(meeting)
+            # print(meeting)
+            ans += meeting
+        return ans
 
     def addLog(self, msg: Commit):
         self.log[msg.logNum] = msg.accVal

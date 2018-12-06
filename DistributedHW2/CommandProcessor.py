@@ -1,5 +1,7 @@
-from .RadioSend import *
-from .ElectionManager import *
+from RadioSend import *
+from ElectionManager import *
+from paxos import *
+from meeting import *
 
 class CommandProcessor:
     def __init__(self,hostname):
@@ -9,21 +11,36 @@ class CommandProcessor:
             raise ValueError("Can not find the hostname in knownhosts_udp.txt")
         self.rs = RadioSend(index,hostname)
         self.em = ElectionManager(hostname,self.rs)
+        self.pa = Paxos(10000, self.rs)
 
-    def processSCHEDULE(self, userInput):
-        return ""
+    def processSCHEDULE(self, line):
+        line = line.split(' ')
+        op = line[0]
+        name = line[1]
+        day = datetime.strptime(line[2], "%m/%d/%Y").date()
+        start = datetime.strptime(line[3], "%H:%M").time()
+        end = datetime.strptime(line[4], "%H:%M").time()
+        participants = line[5].split(',')
+
+        new_meeting = Meeting(name, day, start, end, participants)
+        self.pa.insert(new_meeting, True)
+        return ''
 
     def processCANCEL(self, userInput):
-        return ""
+        line = userInput.split(' ')
+        name = line[1]
+        self.pa.delete(name, True)
+        return ''
 
     def processVIEW(self):
-        return ""
+        return self.paxos.view()
 
     def processMYVIEW(self):
-        return ""
+        return self.paxos.myview()
 
     def processLOG(self):
-        return ""
+        for l in self.paxos.log[:self.paxos.lastAvailablelogNum]:
+                print(l)
 
     def processLEADER(self):
         return self.em.getLeader()

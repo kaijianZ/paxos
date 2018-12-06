@@ -1,7 +1,7 @@
 import sys
 from socket import *
 import json
-from .RadioSend import readTXTFile
+from RadioSend import *
 
 PACKETSIZE_MAX = 1024
 
