@@ -75,7 +75,7 @@ class Synod:
 
     def accept_timeout(self, proposeNum):
         lock.acquire()
-        print('acctimeout', self.proposeVal)
+        print('acceptimeout', self.proposeVal, self.accepts)
 
         if self.accepts[proposeNum] < self.majorityNum:
             self.P_prepare()
@@ -141,7 +141,7 @@ class Synod:
             self.sender.sendMsgToALL('node', msg)
 
         lock.release()
-        t = Timer(0.05, self.accept_timeout, [msg.accNum])
+        t = Timer(0.5, self.accept_timeout, [msg.accNum])
         t.start()
 
     def A_accept(self, msg: AcptReq):
@@ -262,7 +262,7 @@ class Paxos:
     def insert(self, meeting: Meeting, learn: bool):
         lock.acquire()
         if self.learnVals(learn):
-            t = Timer(0.1, self.insert, [meeting, False])
+            t = Timer(0.5, self.insert, [meeting, False])
             t.start()
         else:
             if ok_to_schedule(self.calender, meeting):
@@ -287,7 +287,7 @@ class Paxos:
     def delete(self, meeting, learn: bool):
         lock.acquire()
         if self.learnVals(learn):
-            t = Timer(0.1, self.delete, [meeting, False])
+            t = Timer(0.5, self.delete, [meeting, False])
             t.start()
         else:
             if meeting in self.calender:
