@@ -217,10 +217,9 @@ class Paxos:
     def addLog(self, msg: Commit):
         if self.log[msg.logNum] is not None:
             return
+        assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
         lock.acquire()
-        if msg.accVal is None:
-            return
         if msg.accVal.op == 'schedule':
             self.calender[msg.accVal.value.name] = msg.accVal.value
         else:
@@ -301,4 +300,3 @@ class Paxos:
             else:
                 print('Unable to cancel meeting', meeting + '.')
         lock.release()
-# class normalPaxos()
