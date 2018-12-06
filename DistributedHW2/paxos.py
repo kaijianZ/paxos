@@ -99,7 +99,7 @@ class Synod:
 
         lock.release()
 
-        t = Timer(0.05, self.prepare_timeout, [proposeNum])
+        t = Timer(0.5, self.prepare_timeout, [proposeNum])
         t.start()
 
     def A_promise(self, msg: Prepare):
