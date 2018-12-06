@@ -33,14 +33,15 @@ class CommandProcessor:
         return ""
 
     def processVIEW(self):
-        return self.paxos.view()
+        return self.pa.view()
 
     def processMYVIEW(self):
-        return self.paxos.myview()
+        return self.pa.myview()
 
     def processLOG(self):
-        for l in self.paxos.log[:self.paxos.lastAvailablelogNum]:
-                print(l)
+        for l in self.pa.log[:self.pa.lastAvailablelogNum]:
+            print(l)
+        return ""
 
     def processLEADER(self):
         return self.em.getLeader()
