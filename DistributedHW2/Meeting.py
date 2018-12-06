@@ -43,8 +43,8 @@ class Log(object):
 STABLE_STORAGE = 'stable.pkl'
 
 
-def filter_by_participants(calender, user):
-    return list(filter(lambda x: x.include(user), list(calender)))
+def filter_by_participants(calender: dict, user):
+    return list(filter(lambda x: x.include(user), list(calender.values())))
 
 
 def sorted_view(calender):
