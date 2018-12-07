@@ -231,8 +231,6 @@ class Paxos:
             return
         assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
-        if msg.logNum>0 and msg.logNum%5==0:
-            self.dump_cal(msg.logNum)
         self.dump_log()
         lock.acquire()
         if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
@@ -240,6 +238,9 @@ class Paxos:
         elif msg.logNum >= self.lastAvailablelogNum:
             del self.calender[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
+        if self.lastAvailablelogNum - self.checkPointNum >= 5 and not self.learnVals(False):
+            #self.update_cal(self.)
+            self.dump_cal(self.lastAvailablelogNum)
         lock.release()
 
     def learnVal(self, logNum):
