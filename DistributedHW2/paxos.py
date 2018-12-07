@@ -356,7 +356,7 @@ class Paxos:
 
     def update_cal(self, calendar, logstart, logend):
         for ind in range(logstart, logend):
-            if log[ind].op == 'schedule':
-                calender[log[ind].value.name] = log[ind].value
+            if self.log[ind].op == 'schedule':
+                calender[self.log[ind].value.name] = self.log[ind].value
             else:
-                del calender[log[ind].value]
+                del calender[self.log[ind].value]
