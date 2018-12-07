@@ -245,6 +245,7 @@ class Paxos:
 
     def msgParser(self, msg):
         lock.acquire()
+        print('receive', msg, msg.logNum)
         if isinstance(msg, Prepare):
             if self.logSynod[msg.logNum] is None:
                 self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None,
@@ -286,9 +287,10 @@ class Paxos:
                 returnVal = True
                 if learn:
                     self.learnVal(i)
+        lock.release()
+        print('holes?', returnVal)
         return returnVal
 
-        lock.release()
 
     def delete(self, meeting, learn: bool):
         lock.acquire()
@@ -296,6 +298,7 @@ class Paxos:
             t = Timer(0.2, self.delete, [meeting, False])
             t.start()
         else:
+            print('success--------------')
             if meeting in self.calender:
                 self.logSynod[self.lastAvailablelogNum] = Synod(
                     self.lastAvailablelogNum,
