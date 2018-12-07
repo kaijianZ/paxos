@@ -263,13 +263,13 @@ class Paxos:
 
     def insert(self, meeting: Meeting, learn: bool):
         lock.acquire()
-        if self.learnVals(learn):
+        if not self.learnVals(learn):
             t = Timer(0.2, self.insert, [meeting, False])
             t.start()
         else:
             if ok_to_schedule(self.calender, meeting):
                 print('success--------------')
-                print(self.log)
+                print(self.log[:10])
                 self.logSynod[self.lastAvailablelogNum] = Synod(
                     self.lastAvailablelogNum,
                     self.sender, Log('schedule', meeting), 3)
