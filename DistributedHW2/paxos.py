@@ -5,7 +5,8 @@ import random
 from RadioSend import *
 from threading import RLock, Timer
 
-STABLE_STORAGE = 'stable.pkl'
+LOG_STORAGE = 'log.pkl'
+CAL_STORAGE = 'cal.pkl'
 
 lock = RLock()
 
@@ -206,10 +207,9 @@ class Paxos:
         self.log = self.load_log(logSize)
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
-        self.calender = {}  # K: event name, V: event
+        self.checkPointNum, self.calender = self.load_cal()  # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
-        self.checkPointNum = -1
 
     def view(self):
         ans = ''
@@ -231,7 +231,8 @@ class Paxos:
             return
         assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
-        # if msg.logNum>0 and msg.logNum%5==0:
+        if msg.logNum>0 and msg.logNum%5==0:
+            self.dump_cal(msg.logNum)
         self.dump_log()
         lock.acquire()
         if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
@@ -330,24 +331,24 @@ class Paxos:
         lock.release()
 
     def dump_log(self):
-        with open(STABLE_STORAGE, 'wb') as fout:
+        with open(LOG_STORAGE, 'wb') as fout:
             pickle.dump(self.log, fout, pickle.HIGHEST_PROTOCOL)
 
     def load_log(self, logSize):
-        if os.path.isfile(STABLE_STORAGE) is True:
-            with open(STABLE_STORAGE, 'rb') as fin:
+        if os.path.isfile(LOG_STORAGE) is True:
+            with open(LOG_STORAGE, 'rb') as fin:
                 return pickle.load(fin)
         else:
             return [None] * logSize
 
-    def dump_sch(self, num):
-        tup = (num, self.schedule)
-        with open(STABLE_STORAGE, 'wb') as fout:
-            pickle.dump(tup, fout, pickle.HIGHEST_PROTOCOL)
+    def dump_cal(self, num):
+        tup = (num, self.calender)
+        with open(CAL_STORAGE, 'wb') as fileout:
+            pickle.dump(tup, fileout, pickle.HIGHEST_PROTOCOL)
 
-    def load_sch(self, logSize):
-        if os.path.isfile(STABLE_STORAGE) is True:
-            with open(STABLE_STORAGE, 'rb') as fin:
-                return pickle.load(fin)
+    def load_cal(self):
+        if os.path.isfile(CAL_STORAGE) is True:
+            with open(CAL_STORAGE, 'rb') as filein:
+                return pickle.load(filein)
         else:
-            return [None] * logSize
+            return (0, {})
