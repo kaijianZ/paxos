@@ -280,13 +280,13 @@ class Paxos:
 
     def learnVals(self, learn: bool):  # return T if hole exists, else F
         lock.acquire()
+        returnVal = False
         for i in range(self.lastAvailablelogNum):
             if self.log[i] is None:
+                returnVal = True
                 if learn:
                     self.learnVal(i)
-        else:
-            return False
-        return True
+        return returnVal
 
         lock.release()
 
