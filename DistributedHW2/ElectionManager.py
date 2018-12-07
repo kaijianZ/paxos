@@ -17,7 +17,7 @@ class ElectionManager:
         self.rs = rs
         self.nodeStatus = self.readTXTFileForEM()
         heartbeatDict = {}
-        self.leaderHostname = None
+        self.leaderHostname = hostname
         self.receivedVictory = False
         for key in self.nodeStatus.keys():
             if key != hostname:
