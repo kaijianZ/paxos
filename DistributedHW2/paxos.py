@@ -5,6 +5,8 @@ import random
 from RadioSend import *
 from threading import RLock, Timer
 
+STABLE_STORAGE = 'stable.pkl'
+
 lock = RLock()
 
 class LastReq:
@@ -201,7 +203,7 @@ class Synod:
 
 class Paxos:
     def __init__(self, logSize: int, sender: RadioSend):
-        self.log = [None] * logSize
+        self.log = self.load_log(logSize)
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
         self.calender = {}  # K: event name, V: event
@@ -229,6 +231,8 @@ class Paxos:
             return
         assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
+        if msg.logNum>0 and msg.logNum%5==0:
+            self.dump_log()
         lock.acquire()
         if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
             self.calender[msg.accVal.value.name] = msg.accVal.value
@@ -324,3 +328,13 @@ class Paxos:
                 print('Unable to cancel meeting', meeting + '.')
         lock.release()
 
+    def dump_log(self):
+        with open(STABLE_STORAGE, 'wb') as fout:
+            pickle.dump(self.log, fout, pickle.HIGHEST_PROTOCOL)
+
+    def load_log(self, logSize)
+        if os.path.isfile(STABLE_STORAGE) is True:
+            with open(STABLE_STORAGE, 'rb') as fin:
+                return pickle.load(fin)
+        else:
+            return [None] * logSize
