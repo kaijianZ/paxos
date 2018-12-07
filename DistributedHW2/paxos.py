@@ -7,6 +7,13 @@ from threading import RLock, Timer
 
 lock = RLock()
 
+class LastReq:
+    def __init__(self, senderHost):
+        self.senderHost = senderHost
+
+class Last:
+    def __init__(self, lastNum):
+        self.lastNum = lastNum
 
 class Prepare:
     def __init__(self, logNum, proposeNum, senderHost):
@@ -144,6 +151,7 @@ class Synod:
             msg = AcptReq(msg.logNum, msg.proposeNum, self.proposeVal,
                           self.sender.HOSTNAME)
             self.sender.sendMsgToALL('node', msg)
+            self.proposeCounter = 0
             t = Timer(0.2, self.accept_timeout, [old_proposeNum])
             t.start()
         lock.release()
@@ -198,6 +206,8 @@ class Paxos:
         self.lastAvailablelogNum = 0
         self.calender = {}  # K: event name, V: event
         self.sender = sender
+        self.sender.sendMsgToALL(LastReq(self.sender.HOSTNAME))
+        self.checkPointNum = -1
 
     def view(self):
         ans = ''
@@ -220,9 +230,9 @@ class Paxos:
         assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
         lock.acquire()
-        if msg.accVal.op == 'schedule':
+        if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
             self.calender[msg.accVal.value.name] = msg.accVal.value
-        else:
+        elif msg.logNum >= self.lastAvailablelogNum:
             del self.calender[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
         lock.release()
@@ -259,6 +269,11 @@ class Paxos:
             self.recvAccept(msg)
         elif isinstance(msg, Commit):
             self.addLog(msg)
+        elif isinstance(msg, LastReq):
+            self.sender.sendMsg(LastReq.senderHost, self.lastAvailablelogNum)
+        elif isinstance(msg, Last):
+            self.lastAvailablelogNum = msg.lastNum
+            self.learnVals(True)
         else:
             return msg
         lock.release()
@@ -293,7 +308,6 @@ class Paxos:
         print('holes?', returnVal)
         return returnVal
 
-
     def delete(self, meeting, learn: bool):
         lock.acquire()
         if self.learnVals(learn):
@@ -309,3 +323,4 @@ class Paxos:
             else:
                 print('Unable to cancel meeting', meeting + '.')
         lock.release()
+
