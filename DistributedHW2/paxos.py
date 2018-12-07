@@ -10,13 +10,16 @@ CAL_STORAGE = 'cal.pkl'
 
 lock = RLock()
 
+
 class LastReq:
     def __init__(self, senderHost):
         self.senderHost = senderHost
 
+
 class Last:
     def __init__(self, lastNum):
         self.lastNum = lastNum
+
 
 class Prepare:
     def __init__(self, logNum, proposeNum, senderHost):
@@ -209,8 +212,6 @@ class Paxos:
         self.lastAvailablelogNum = 0
         self.checkPointNum, self.checkPoint = self.load_cal()
         self.calendar = dict.copy(self.checkPoint)
-        self.update_cal(self.calendar, self.checkPointNum,
-                        self.lastAvailablelogNum)
         # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
@@ -248,16 +249,20 @@ class Paxos:
         elif msg.logNum >= self.lastAvailablelogNum:
             del self.calendar[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
-        if self.lastAvailablelogNum - self.checkPointNum >= 5 and not self.learnVals(False):
-            self.update_cal(self.checkPoint, self.checkPointNum, self.lastAvailablelogNum - self.lastAvailablelogNum % 5)
+        if self.lastAvailablelogNum - self.checkPointNum >= 5 and not self.learnVals(
+                False):
+            self.update_cal(self.checkPoint, self.checkPointNum,
+                            self.lastAvailablelogNum - self.lastAvailablelogNum % 5)
             self.checkPointNum = self.lastAvailablelogNum - self.lastAvailablelogNum % 5
             self.dump_cal()
 
         if msg.logNum < self.lastAvailablelogNum and not self.learnVals(False):
+            print('!!!!!!!!!!!!!!!!!!!!!!')
             self.calendar = dict.copy(self.checkPoint)
             self.update_cal(self.calendar, self.checkPointNum,
                             self.lastAvailablelogNum)
-
+        print(msg.logNum, self.lastAvailablelogNum, self.learnVals(False),
+              self.log[:10])
         lock.release()
 
     def learnVal(self, logNum):
@@ -297,7 +302,9 @@ class Paxos:
                                 Last(self.lastAvailablelogNum))
         elif isinstance(msg, Last):
             self.lastAvailablelogNum = msg.lastNum
-            self.learnVals(True)
+            if not self.learnVals(True):
+                self.update_cal(self.calendar, self.checkPointNum,
+                                self.lastAvailablelogNum)
         else:
             print(msg)
         lock.release()
