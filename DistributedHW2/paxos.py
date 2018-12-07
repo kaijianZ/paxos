@@ -332,7 +332,7 @@ class Paxos:
         with open(STABLE_STORAGE, 'wb') as fout:
             pickle.dump(self.log, fout, pickle.HIGHEST_PROTOCOL)
 
-    def load_log(self, logSize)
+    def load_log(self, logSize):
         if os.path.isfile(STABLE_STORAGE) is True:
             with open(STABLE_STORAGE, 'rb') as fin:
                 return pickle.load(fin)
