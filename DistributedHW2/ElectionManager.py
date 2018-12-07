@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 import threading
 import time
 
@@ -34,17 +33,14 @@ class ElectionManager:
     # used to send heartbeat request to a receiver
     def sendHeartbeat(self,targetHostname):
         textObj = {"senderHostname":self.hostname}
-        # textStr = json.dumps(textObj)
         self.rs.sendMsg(targetHostname,"heartbeat",textObj)
         t = threading.Timer(HEARTBEAT_WAIT,self.checkHeartbeat,[targetHostname])
         t.start()
 
     # when receiving heartbeat request, reply alive
     def recvHeartbeat(self,textObj):
-        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         textObj2 = {"senderHostname":self.hostname}
-        textStr2 = json.dumps(textObj2)
         self.rs.sendMsg(senderHostname,"heartbeat-reply",textObj2)
         if self.nodeStatus[senderHostname]["status"] == False:
             self.nodeStatus[senderHostname]["status"] = True
@@ -54,7 +50,6 @@ class ElectionManager:
 
     # when receiving heartbeat_reply, update with the receiving time
     def recvHeartbeat_reply(self,textObj):
-        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         self.nodeStatus[senderHostname]["lastHeartbeat"] = datetime.now()
         #print("HB-reply:"+senderHostname)
@@ -101,7 +96,6 @@ class ElectionManager:
     def sendElection(self,targetHostname):
         #print("sendElection to "+str(targetHostname))
         textObj = {"senderHostname":self.hostname}
-        textStr = json.dumps(textObj)
         self.rs.sendMsg(targetHostname,"election-start",textObj)
         t = threading.Timer(ELECTION_WAIT,self.checkElection,[targetHostname])
         t.start()
@@ -109,11 +103,9 @@ class ElectionManager:
     # received election message
     # will reply (alive)
     def recvElection(self,textObj):
-        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         #print("recvElection from "+str(senderHostname))
         textObj2 = {"senderHostname":self.hostname}
-        textStr2 = json.dumps(textObj2)
         #print("\tsend election-reply back")
         self.rs.sendMsg(senderHostname,"election-reply",textObj2)
         # send election to nodes higher-level than myself
@@ -121,7 +113,6 @@ class ElectionManager:
 
     # received election-reply (alive) message
     def recvElection_reply(self,textObj):
-        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         #print("recvElection_reply from "+str(senderHostname))
         self.nodeStatus[senderHostname]["lastElection"] = datetime.now()
@@ -163,12 +154,10 @@ class ElectionManager:
         #print("sendVictoryToALL")
         for key in self.nodeStatus.keys():
             textObj = {"senderHostname":self.hostname}
-            textStr = json.dumps(textObj)
             self.rs.sendMsg(key,"election-victory",textObj)
 
     def recvVictory(self,textObj):
         #print("recvVictory")
-        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         # #print("\told leader was "+str(self.leaderHostname))
         self.leaderHostname = senderHostname
