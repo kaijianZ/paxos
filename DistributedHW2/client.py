@@ -50,6 +50,8 @@ def str2jsonStr(str):
         strD["command"] = "myview"
     elif command == "log":
         strD["command"] = "log"
+    elif command == "checkpoint":
+        strD["command"] = "checkpoint"    
     elif command == "leader":
         strD["command"] = "leader"
     elif command == "exit":
