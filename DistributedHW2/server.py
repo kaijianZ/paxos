@@ -2,17 +2,19 @@ import select
 from socket import *
 import sys
 import traceback
-import json
+# import json
 from CommandProcessor import CommandProcessor
 from RadioSend import readTXTFile
+import pickle
 
 BACKLOG_MAX = 5
 PACKETSIZE_MAX = 1024
 TIMEOUT = 5
 
+
 def main():
     HOSTNAME = sys.argv[1]
-    sitelist,_ = readTXTFile()
+    sitelist, _ = readTXTFile()
     PORT = sitelist[sys.argv[1]]["port"]
     print("Hostname: [" + HOSTNAME + "] on port [" + str(PORT) + "]")
 
@@ -33,23 +35,25 @@ def main():
         data, sender_addr = server.recvfrom(PACKETSIZE_MAX)
         # print(data.decode("utf-8"))
         try:
-            ret = processInput(data.decode("utf-8"), CP)
+            ret = processInput(data, CP)
         except Exception as e:
             traceback.print_exc()
             ret = "Internal error"
         if ret == "REMOTE":
             continue
-        server.sendto(str.encode(ret),sender_addr)
+        server.sendto(str.encode(ret), sender_addr)
         sys.stdout.flush()
 
+
 def processInput(str, CP):
+    # print(str)
     try:
-        strObj = json.loads(str)
+        strObj = pickle.loads(str)
         command = strObj["command"]
         # print("/"+command)
     except:
-        print("Invalid input: " + str)
-        traceback.print_exc()
+        # print("Invalid input: " + str)
+        # traceback.print_exc()
         return "Invalid input"
 
     text = strObj["text"]
@@ -65,10 +69,8 @@ def processInput(str, CP):
         return CP.processLOG()
     elif command == "leader":
         return CP.processLEADER()
-    elif command == "receiveCreate":
-        return CP.processRECEIVE_create(text)
-    elif command == "receiveCancel":
-        return CP.processRECEIVE_cancel(text)
+    elif command == "node":
+        return CP.pa.msgParser(text)
     elif command == "heartbeat":
         return CP.processHEARTBEAT(text)
     elif command == "heartbeat-reply":
@@ -83,6 +85,7 @@ def processInput(str, CP):
         return CP.processELECTION_victory(text)
     else:
         return "Invalid input\n"
+
 
 if __name__ == "__main__":
     try:
