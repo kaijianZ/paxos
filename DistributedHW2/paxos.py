@@ -259,6 +259,8 @@ class Paxos:
             self.recvAccept(msg)
         elif isinstance(msg, Commit):
             self.addLog(msg)
+        else:
+            return msg
         lock.release()
         return ''
 
