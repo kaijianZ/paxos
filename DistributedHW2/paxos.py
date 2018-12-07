@@ -208,7 +208,7 @@ class Paxos:
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
         self.checkPointNum, self.checkPoint = self.load_cal()
-        self.calender = dict.copy(self.checkPoint) # K: event name, V: event
+        self.calendar = dict.copy(self.checkPoint) # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
 
@@ -251,8 +251,8 @@ class Paxos:
             self.dump_cal()
 
         if msg.logNum < self.lastAvailablelogNum and not self.learnVals(False):
-            self.calender = dict.copy(self.checkPoint)
-            self.update_cal(self.calender, self.checkPointNum,
+            self.calendar = dict.copy(self.checkPoint)
+            self.update_cal(self.calendar, self.checkPointNum,
                             self.lastAvailablelogNum)
 
         lock.release()
