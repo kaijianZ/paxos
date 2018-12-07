@@ -274,12 +274,13 @@ class Paxos:
         elif isinstance(msg, Commit):
             self.addLog(msg)
         elif isinstance(msg, LastReq):
-            self.sender.sendMsg(msg.senderHost, 'node', self.lastAvailablelogNum)
+            self.sender.sendMsg(msg.senderHost, 'node',
+                                Last(self.lastAvailablelogNum))
         elif isinstance(msg, Last):
             self.lastAvailablelogNum = msg.lastNum
             self.learnVals(True)
         else:
-            return msg
+            print(msg)
         lock.release()
         return ''
 
