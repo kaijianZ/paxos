@@ -208,7 +208,7 @@ class Paxos:
         self.lastAvailablelogNum = 0
         self.calender = {}  # K: event name, V: event
         self.sender = sender
-        self.sender.sendMsgToALL(LastReq(self.sender.HOSTNAME))
+        self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
         self.checkPointNum = -1
 
     def view(self):
