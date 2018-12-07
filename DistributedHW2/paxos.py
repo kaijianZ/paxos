@@ -339,3 +339,15 @@ class Paxos:
                 return pickle.load(fin)
         else:
             return [None] * logSize
+
+    def dump_sch(self, num):
+        tup = (num, self.schedule)
+        with open(STABLE_STORAGE, 'wb') as fout:
+            pickle.dump(tup, fout, pickle.HIGHEST_PROTOCOL)
+
+    def load_sch(self, logSize):
+        if os.path.isfile(STABLE_STORAGE) is True:
+            with open(STABLE_STORAGE, 'rb') as fin:
+                return pickle.load(fin)
+        else:
+            return [None] * logSize
