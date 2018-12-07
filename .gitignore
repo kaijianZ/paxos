@@ -1,4 +1,5 @@
 *.pyc
 *.txt
 *.dat
+*.pkl
 bin/
