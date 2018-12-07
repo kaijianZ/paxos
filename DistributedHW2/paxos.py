@@ -231,8 +231,8 @@ class Paxos:
             return
         assert (msg.accVal is not None)
         self.log[msg.logNum] = msg.accVal
-        if msg.logNum>0 and msg.logNum%5==0:
-            self.dump_log()
+        # if msg.logNum>0 and msg.logNum%5==0:
+        self.dump_log()
         lock.acquire()
         if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
             self.calender[msg.accVal.value.name] = msg.accVal.value
