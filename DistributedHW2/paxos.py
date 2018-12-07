@@ -208,7 +208,10 @@ class Paxos:
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
         self.checkPointNum, self.checkPoint = self.load_cal()
-        self.calendar = dict.copy(self.checkPoint) # K: event name, V: event
+        self.calendar = dict.copy(self.checkPoint)
+        self.update_cal(self.calendar, self.checkPointNum,
+                        self.lastAvailablelogNum)
+        # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
 
