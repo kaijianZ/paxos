@@ -39,8 +39,8 @@ def main():
         except Exception as e:
             traceback.print_exc()
             ret = "Internal error"
-        if ret == "REMOTE":
-            continue
+        if ret == "exit":
+            break
         server.sendto(str.encode(ret), sender_addr)
         sys.stdout.flush()
 
@@ -69,6 +69,8 @@ def processInput(str, CP):
         return CP.processLOG()
     elif command == "leader":
         return CP.processLEADER()
+    elif command == "exit":
+        return "exit"
     elif command == "node":
         return CP.pa.msgParser(text)
     elif command == "heartbeat":

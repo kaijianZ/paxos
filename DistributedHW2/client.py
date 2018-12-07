@@ -21,14 +21,16 @@ def main():
 
     while True:
         try:
-            userInput = str2jsonStr(input())
+            userInput = input()
+            userInputObj = str2jsonStr(userInput)
         except ValueError as e:
             print(e)
             continue
-        sock.sendto(userInput, addr)
+        sock.sendto(userInputObj, addr)
+        if userInput == "exit":
+            break
         reply, _ = sock.recvfrom(PACKETSIZE_MAX)
         print(reply.decode())
-
 
 def str2jsonStr(str):
     strList = str.split(" ")
@@ -50,6 +52,8 @@ def str2jsonStr(str):
         strD["command"] = "log"
     elif command == "leader":
         strD["command"] = "leader"
+    elif command == "exit":
+        strD["command"] = "exit"
     else:
         raise ValueError("Invalid input")
     jsonStr = pickle.dumps(strD)
