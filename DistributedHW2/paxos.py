@@ -263,7 +263,7 @@ class Paxos:
 
     def insert(self, meeting: Meeting, learn: bool):
         lock.acquire()
-        if self.learnVals(learn):
+        if self.lastAvailablelogNum > 0 and self.learnVals(learn):
             t = Timer(0.2, self.insert, [meeting, False])
             t.start()
         else:
