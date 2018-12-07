@@ -207,13 +207,13 @@ class Paxos:
         self.log = self.load_log(logSize)
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
-        self.checkPointNum, self.calender = self.load_cal()  # K: event name, V: event
+        self.checkPointNum, self.calendar = self.load_cal()  # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
 
     def view(self):
         ans = ''
-        for meeting in sorted_view(self.calender.values()):
+        for meeting in sorted_view(self.calendar.values()):
             # print(meeting)f
             ans += str(meeting) + '\n'
         return ans.rstrip('\n')
@@ -221,7 +221,7 @@ class Paxos:
     def myview(self):
         ans = ''
         for meeting in sorted_view(filter_by_participants(
-                self.calender, self.sender.HOSTNAME)):
+                self.calendar, self.sender.HOSTNAME)):
             # print(meeting)
             ans += str(meeting) + '\n'
         return ans.rstrip('\n')
@@ -236,9 +236,9 @@ class Paxos:
         self.dump_log()
         lock.acquire()
         if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
-            self.calender[msg.accVal.value.name] = msg.accVal.value
+            self.calendar[msg.accVal.value.name] = msg.accVal.value
         elif msg.logNum >= self.lastAvailablelogNum:
-            del self.calender[msg.accVal.value]
+            del self.calendar[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
         lock.release()
 
@@ -291,7 +291,7 @@ class Paxos:
             t = Timer(0.2, self.insert, [meeting, False])
             t.start()
         else:
-            if ok_to_schedule(self.calender, meeting):
+            if ok_to_schedule(self.calendar, meeting):
                 print('success--------------')
                 print(self.log[:10])
                 self.logSynod[self.lastAvailablelogNum] = Synod(
@@ -321,7 +321,7 @@ class Paxos:
             t.start()
         else:
             print('success--------------')
-            if meeting in self.calender:
+            if meeting in self.calendar:
                 self.logSynod[self.lastAvailablelogNum] = Synod(
                     self.lastAvailablelogNum,
                     self.sender, Log('cancel', meeting), 3)
@@ -342,7 +342,7 @@ class Paxos:
             return [None] * logSize
 
     def dump_cal(self, num):
-        tup = (num, self.calender)
+        tup = (num, self.calendar)
         with open(CAL_STORAGE, 'wb') as fileout:
             pickle.dump(tup, fileout, pickle.HIGHEST_PROTOCOL)
 
@@ -352,3 +352,9 @@ class Paxos:
                 return pickle.load(filein)
         else:
             return (0, {})
+
+    def update_cal(self, calendar, logstart, logend):
+        if msg.accVal.op == 'schedule' and msg.logNum >= self.lastAvailablelogNum:
+            self.calender[msg.accVal.value.name] = msg.accVal.value
+        elif msg.logNum >= self.lastAvailablelogNum:
+            del self.calender[msg.accVal.value]
