@@ -12,7 +12,7 @@ ALLOWED_TIMER_LATENCY = 0.1
 # e.g: laggy network, delay the UDP message
 class ElectionManager:
     def __init__(self,hostname,rs):
-        print("===========Initializing start===========")
+        #print("===========Initializing start===========")
         self.hostname = hostname
         self.rs = rs
         self.nodeStatus = self.readTXTFileForEM()
@@ -23,7 +23,7 @@ class ElectionManager:
             if key != hostname:
                 self.sendHeartbeat(key)
         self.sendElectionToALL()
-        print("===========Initializing Ends===========")
+        #print("===========Initializing Ends===========")
 
     def getLeader(self):
         return self.leaderHostname
@@ -34,18 +34,18 @@ class ElectionManager:
     # used to send heartbeat request to a receiver
     def sendHeartbeat(self,targetHostname):
         textObj = {"senderHostname":self.hostname}
-        textStr = json.dumps(textObj)
-        self.rs.sendMsg(targetHostname,"heartbeat",textStr)
+        # textStr = json.dumps(textObj)
+        self.rs.sendMsg(targetHostname,"heartbeat",textObj)
         t = threading.Timer(HEARTBEAT_WAIT,self.checkHeartbeat,[targetHostname])
         t.start()
 
     # when receiving heartbeat request, reply alive
-    def recvHeartbeat(self,inputStr):
-        textObj = json.loads(inputStr)
+    def recvHeartbeat(self,textObj):
+        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         textObj2 = {"senderHostname":self.hostname}
         textStr2 = json.dumps(textObj2)
-        self.rs.sendMsg(senderHostname,"heartbeat-reply",textStr2)
+        self.rs.sendMsg(senderHostname,"heartbeat-reply",textObj2)
         if self.nodeStatus[senderHostname]["status"] == False:
             self.nodeStatus[senderHostname]["status"] = True
             self.sendHeartbeat(senderHostname)
@@ -53,23 +53,23 @@ class ElectionManager:
         # transmission time with sender? less message will be sent
 
     # when receiving heartbeat_reply, update with the receiving time
-    def recvHeartbeat_reply(self,inputStr):
-        textObj = json.loads(inputStr)
+    def recvHeartbeat_reply(self,textObj):
+        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
         self.nodeStatus[senderHostname]["lastHeartbeat"] = datetime.now()
-        print("HB-reply:"+senderHostname)
+        #print("HB-reply:"+senderHostname)
 
     # used to check heartbeat from the hostname
     # if dead, elect new leader if needed
     def checkHeartbeat(self,hostname):
         if not self._checkHeartbeat(hostname):
-            print("node: "+hostname+" is dead")
+            #print("node: "+hostname+" is dead")
             # if the dead node is the leader, reelect
             self.nodeStatus[hostname]["status"] = False
             if hostname == self.leaderHostname:
                 self.sendElectionToALL()
         else:
-            print("node: "+hostname+" is alive")
+            #print("node: "+hostname+" is alive")
             self.nodeStatus[hostname]["status"] = True
             # optimization
             # only send heartbeat to leader, it is the only node matters
@@ -82,7 +82,7 @@ class ElectionManager:
 
     # send election message to all nodes with higher priorities
     def sendElectionToALL(self):
-        print("sendElectionToALL")
+        #print("sendElectionToALL")
         # optimization
         # if this node is the highest-value node, ignore election and send victory
         highestHostname = max(list(self.nodeStatus.keys()))
@@ -99,31 +99,31 @@ class ElectionManager:
 
     # send election message to a node
     def sendElection(self,targetHostname):
-        print("sendElection to "+str(targetHostname))
+        #print("sendElection to "+str(targetHostname))
         textObj = {"senderHostname":self.hostname}
         textStr = json.dumps(textObj)
-        self.rs.sendMsg(targetHostname,"election-start",textStr)
+        self.rs.sendMsg(targetHostname,"election-start",textObj)
         t = threading.Timer(ELECTION_WAIT,self.checkElection,[targetHostname])
         t.start()
 
     # received election message
     # will reply (alive)
-    def recvElection(self,inputStr):
-        textObj = json.loads(inputStr)
+    def recvElection(self,textObj):
+        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
-        print("recvElection from "+str(senderHostname))
+        #print("recvElection from "+str(senderHostname))
         textObj2 = {"senderHostname":self.hostname}
         textStr2 = json.dumps(textObj2)
-        print("\tsend election-reply back")
-        self.rs.sendMsg(senderHostname,"election-reply",textStr2)
+        #print("\tsend election-reply back")
+        self.rs.sendMsg(senderHostname,"election-reply",textObj2)
         # send election to nodes higher-level than myself
         self.sendElectionToALL()
 
     # received election-reply (alive) message
-    def recvElection_reply(self,inputStr):
-        textObj = json.loads(inputStr)
+    def recvElection_reply(self,textObj):
+        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
-        print("recvElection_reply from "+str(senderHostname))
+        #print("recvElection_reply from "+str(senderHostname))
         self.nodeStatus[senderHostname]["lastElection"] = datetime.now()
 
     # check whether the given node replied alive in time
@@ -131,17 +131,17 @@ class ElectionManager:
     # if not, mark the node NOT ready for leader position
     def checkElection(self,hostname):
         if self._checkElection(hostname):
-            print("checkElection: mark "+str(hostname)+" as True")
+            #print("checkElection: mark "+str(hostname)+" as True")
             self.nodeStatus[hostname]["leaderAvailable"] = True
         else:
-            print("checkElection: mark "+str(hostname)+" as False")
+            #print("checkElection: mark "+str(hostname)+" as False")
             self.nodeStatus[hostname]["leaderAvailable"] = False
 
     # check whether any node replied alive in time
     # if yes, shut up and wait for victory till timedout
     # if no, send victory to everyone
     def checkElectionOnALL(self):
-        print("checkElectionOnALL")
+        #print("checkElectionOnALL")
         for key in self.nodeStatus.keys():
             if self.nodeStatus[key]["leaderAvailable"] == True:
                 self.victory = None
@@ -152,7 +152,7 @@ class ElectionManager:
                 return
         # all nodes are False
         # it's my VICTORY
-        print("timeout on alive")
+        #print("timeout on alive")
         self.sendVictoryToALL()
 
 #==============================================================================
@@ -160,29 +160,29 @@ class ElectionManager:
 #==============================================================================
 
     def sendVictoryToALL(self):
-        print("sendVictoryToALL")
+        #print("sendVictoryToALL")
         for key in self.nodeStatus.keys():
             textObj = {"senderHostname":self.hostname}
             textStr = json.dumps(textObj)
-            self.rs.sendMsg(key,"election-victory",textStr)
+            self.rs.sendMsg(key,"election-victory",textObj)
 
-    def recvVictory(self,inputStr):
-        print("recvVictory")
-        textObj = json.loads(inputStr)
+    def recvVictory(self,textObj):
+        #print("recvVictory")
+        # textObj = json.loads(inputStr)
         senderHostname = textObj["senderHostname"]
-        print("\told leader was "+str(self.leaderHostname))
+        # #print("\told leader was "+str(self.leaderHostname))
         self.leaderHostname = senderHostname
         self.receivedVictory = True
-        print("\tnew leader is "+self.leaderHostname)
+        # #print("\tnew leader is "+self.leaderHostname)
 
     def checkVictory(self):
         if self.receivedVictory == False:
             # leader timeout his victory, reelect one
-            print("checkVictory-timeout on victory")
+            # #print("checkVictory-timeout on victory")
             self.sendElectionToALL()
         else:
             # the leader calimed victory, end the election
-            print("checkVictory-found leader")
+            # #print("checkVictory-found leader")
             self.receivedVictory == False
 
 #==============================================================================

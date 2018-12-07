@@ -1,22 +1,23 @@
 import sys
 from socket import *
-import json
-from RadioSend import readTXTFile
+import pickle
+from RadioSend import *
 
 PACKETSIZE_MAX = 1024
 
+
 def main():
     HOSTNAME = sys.argv[1]
-    sitelist,_ = readTXTFile()
+    sitelist, _ = readTXTFile()
     PORT = sitelist[sys.argv[1]]["port"]
 
     addr = (HOSTNAME, PORT)
     try:
         sock = socket(AF_INET, SOCK_DGRAM)
     except error:
-        print("Can not connect to server, %s:%s"%addr)
+        print("Can not connect to server, %s:%s" % addr)
         sys.exit()
-    print("Connected to server, %s:%s"%addr)
+    print("Connected to server, %s:%s" % addr)
 
     while True:
         try:
@@ -24,9 +25,10 @@ def main():
         except ValueError as e:
             print(e)
             continue
-        sock.sendto(userInput.encode(), addr)
-        reply,_ = sock.recvfrom(PACKETSIZE_MAX)
+        sock.sendto(userInput, addr)
+        reply, _ = sock.recvfrom(PACKETSIZE_MAX)
         print(reply.decode())
+
 
 def str2jsonStr(str):
     strList = str.split(" ")
@@ -50,10 +52,11 @@ def str2jsonStr(str):
         strD["command"] = "leader"
     else:
         raise ValueError("Invalid input")
-    jsonStr = json.dumps(strD)
+    jsonStr = pickle.dumps(strD)
     return jsonStr
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:

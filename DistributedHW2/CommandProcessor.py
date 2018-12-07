@@ -1,30 +1,49 @@
-from Meeting import Meeting, strList2Meeting
-import RadioSend
-import ElectionManager
+from RadioSend import *
+from ElectionManager import *
+from paxos import *
+from meeting import *
+
 
 class CommandProcessor:
-    def __init__(self,hostname):
+    def __init__(self, hostname):
         self.hostname = hostname
         index, self.MaxIndex = findIndexFromTXTFile(hostname)
         if index < 0:
             raise ValueError("Can not find the hostname in knownhosts_udp.txt")
-        self.rs = RadioSend.RadioSend(index,hostname)
-        self.em = ElectionManager.ElectionManager(hostname,self.rs)
+        self.rs = RadioSend(index, hostname)
+        self.em = ElectionManager(hostname, self.rs)
+        self.pa = Paxos(10000, self.rs)
 
-    def processSCHEDULE(self, userInput):
+    def processSCHEDULE(self, line):
+        line = line.split(' ')
+        op = line[0]
+        name = line[1]
+        day = datetime.strptime(line[2], "%m/%d/%Y").date()
+        start = datetime.strptime(line[3], "%H:%M").time()
+        end = datetime.strptime(line[4], "%H:%M").time()
+        participants = line[5].split(',')
+
+        new_meeting = Meeting(name, day, start, end, participants)
+        self.pa.insert(new_meeting, True)
         return ""
 
     def processCANCEL(self, userInput):
+        line = userInput.split(' ')
+        name = line[1]
+        self.pa.delete(name, True)
         return ""
 
     def processVIEW(self):
-        return ""
+        return self.pa.view()
 
     def processMYVIEW(self):
-        return ""
+        return self.pa.myview()
 
     def processLOG(self):
-        return ""
+        ans = ''
+        for l in self.pa.log[:self.pa.lastAvailablelogNum]:
+            ans += str(l) + '\n'
+        return ans.rstrip('\n')
 
     def processLEADER(self):
         return self.em.getLeader()
@@ -61,9 +80,10 @@ class CommandProcessor:
         self.em.recvVictory(inputStr)
         return ""
 
-#==============================================================================
+
+# ==============================================================================
 #                               Helpers
-#==============================================================================
+# ==============================================================================
 
 # return index representing line number in TXT
 # return -1 when no data inside txt matches given hostname
