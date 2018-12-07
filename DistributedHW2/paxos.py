@@ -259,7 +259,7 @@ class Paxos:
 
     def msgParser(self, msg):
         lock.acquire()
-        print('receive', msg, msg.logNum)
+        #print('receive', msg, msg.logNum)
         if isinstance(msg, Prepare):
             if self.logSynod[msg.logNum] is None:
                 self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None,
@@ -274,7 +274,7 @@ class Paxos:
         elif isinstance(msg, Commit):
             self.addLog(msg)
         elif isinstance(msg, LastReq):
-            self.sender.sendMsg(LastReq.senderHost, self.lastAvailablelogNum)
+            self.sender.sendMsg(msg.senderHost, 'node', self.lastAvailablelogNum)
         elif isinstance(msg, Last):
             self.lastAvailablelogNum = msg.lastNum
             self.learnVals(True)
