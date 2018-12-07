@@ -207,7 +207,8 @@ class Paxos:
         self.log = self.load_log(logSize)
         self.logSynod = [None] * logSize
         self.lastAvailablelogNum = 0
-        self.checkPointNum, self.calendar = self.load_cal()  # K: event name, V: event
+        self.checkPointNum, self.checkPoint = self.load_cal()
+        self.calender = dict.copy(self.checkPoint) # K: event name, V: event
         self.sender = sender
         self.sender.sendMsgToALL('node', LastReq(self.sender.HOSTNAME))
 
@@ -239,8 +240,9 @@ class Paxos:
             del self.calendar[msg.accVal.value]
         self.lastAvailablelogNum = max(self.lastAvailablelogNum, msg.logNum + 1)
         if self.lastAvailablelogNum - self.checkPointNum >= 5 and not self.learnVals(False):
-            #self.update_cal(self.)
-            self.dump_cal(self.lastAvailablelogNum)
+            self.update_cal(self.checkPoint, self.checkPointNum, self.lastAvailablelogNum - self.lastAvailablelogNum % 5)
+            self.checkPointNum = self.lastAvailablelogNum - self.lastAvailablelogNum % 5
+            self.dump_cal()
         lock.release()
 
     def learnVal(self, logNum):
@@ -342,8 +344,8 @@ class Paxos:
         else:
             return [None] * logSize
 
-    def dump_cal(self, num):
-        tup = (num, self.calendar)
+    def dump_cal(self):
+        tup = (self.checkPointNum, self.checkPoint)
         with open(CAL_STORAGE, 'wb') as fileout:
             pickle.dump(tup, fileout, pickle.HIGHEST_PROTOCOL)
 
