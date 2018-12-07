@@ -278,7 +278,7 @@ class Paxos:
 
     def msgParser(self, msg):
         lock.acquire()
-        #print('receive', msg, msg.logNum)
+        print('receive', msg)
         if isinstance(msg, Prepare):
             if self.logSynod[msg.logNum] is None:
                 self.logSynod[msg.logNum] = Synod(msg.logNum, self.sender, None,
