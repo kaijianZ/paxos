@@ -67,6 +67,8 @@ def processInput(str, CP):
         return CP.processMYVIEW()
     elif command == "log":
         return CP.processLOG()
+    elif command == "checkpoint":
+        return CP.processCHECKPOINT()    
     elif command == "leader":
         return CP.processLEADER()
     elif command == "exit":

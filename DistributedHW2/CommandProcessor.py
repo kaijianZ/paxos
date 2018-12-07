@@ -45,6 +45,9 @@ class CommandProcessor:
             ans += str(l) + '\n'
         return ans.rstrip('\n')
 
+    def processCHECKPOINT(self):
+        return self.pa.viewCheckPoint()
+
     def processLEADER(self):
         return self.em.getLeader()
 

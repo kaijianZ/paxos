@@ -215,7 +215,7 @@ class Paxos:
     def view(self):
         ans = ''
         for meeting in sorted_view(self.calendar.values()):
-            # print(meeting)f
+            # print(meeting)
             ans += str(meeting) + '\n'
         return ans.rstrip('\n')
 
@@ -224,6 +224,12 @@ class Paxos:
         for meeting in sorted_view(filter_by_participants(
                 self.calendar, self.sender.HOSTNAME)):
             # print(meeting)
+            ans += str(meeting) + '\n'
+        return ans.rstrip('\n')
+
+    def viewCheckPoint(self):
+        ans = ''
+        for meeting in sorted_view(self.checkPoint.values()):
             ans += str(meeting) + '\n'
         return ans.rstrip('\n')
 
