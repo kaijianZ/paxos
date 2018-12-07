@@ -243,6 +243,12 @@ class Paxos:
             self.update_cal(self.checkPoint, self.checkPointNum, self.lastAvailablelogNum - self.lastAvailablelogNum % 5)
             self.checkPointNum = self.lastAvailablelogNum - self.lastAvailablelogNum % 5
             self.dump_cal()
+
+        if msg.logNum < self.lastAvailablelogNum and not self.learnVals(False):
+            self.calender = dict.copy(self.checkPoint)
+            self.update_cal(self.calender, self.checkPointNum,
+                            self.lastAvailablelogNum)
+
         lock.release()
 
     def learnVal(self, logNum):
