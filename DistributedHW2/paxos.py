@@ -268,7 +268,8 @@ class Paxos:
             t.start()
         else:
             if ok_to_schedule(self.calender, meeting):
-                # print('success--------------')
+                print('success--------------')
+                print(self.log)
                 self.logSynod[self.lastAvailablelogNum] = Synod(
                     self.lastAvailablelogNum,
                     self.sender, Log('schedule', meeting), 3)
@@ -278,6 +279,7 @@ class Paxos:
         lock.release()
 
     def learnVals(self, learn: bool):  # return T if hole exists, else F
+        lock.acquire()
         for i in range(self.lastAvailablelogNum):
             if self.log[i] is None:
                 if learn:
@@ -285,6 +287,8 @@ class Paxos:
         else:
             return False
         return True
+
+        lock.release()
 
     def delete(self, meeting, learn: bool):
         lock.acquire()
